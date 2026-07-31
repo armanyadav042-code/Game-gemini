@@ -109,13 +109,22 @@ export default function ToolsTab({ tools, worlds, gameState, onUnlockTool, onEqu
           return (
             <div
               key={tool.id}
-              className={`relative flex flex-col justify-between bg-slate-900/40 border rounded-xl p-4 transition-all overflow-hidden ${
+              className={`relative flex flex-col justify-between bg-slate-900/40 border rounded-xl p-4 transition-all overflow-hidden cursor-pointer group ${
                 isEquipped
-                  ? 'border-emerald-500 bg-slate-900/80 shadow-md shadow-emerald-950/20'
+                  ? 'border-emerald-500 bg-slate-900/90 shadow-md shadow-emerald-950/30 ring-1 ring-emerald-500/50'
                   : isUnlocked
-                  ? 'border-slate-800/80 hover:border-slate-700 hover:bg-slate-900/60'
-                  : 'border-slate-950/60 bg-slate-950/20 opacity-75'
+                  ? 'border-slate-800/80 hover:border-emerald-500/50 hover:bg-slate-900/80 active:scale-[0.99]'
+                  : canBuy
+                  ? 'border-amber-500/50 bg-slate-900/60 hover:border-amber-400 active:scale-[0.99]'
+                  : 'border-slate-950/60 bg-slate-950/20 opacity-75 cursor-not-allowed'
               }`}
+              onClick={() => {
+                if (isUnlocked) {
+                  if (!isEquipped) onEquipTool(tool.id);
+                } else if (worldReached && canAfford) {
+                  onUnlockTool(tool.id);
+                }
+              }}
               id={`tool-card-${tool.id}`}
             >
               {/* Outer decorative neon strip for equipped item */}
@@ -126,7 +135,7 @@ export default function ToolsTab({ tools, worlds, gameState, onUnlockTool, onEqu
               {/* Tool Icon and Core Info */}
               <div className="flex gap-3">
                 <div 
-                  className="flex-shrink-0 flex items-center justify-center w-12 h-12 rounded-xl bg-slate-950 border border-slate-800 shadow-inner"
+                  className="flex-shrink-0 flex items-center justify-center w-12 h-12 rounded-xl bg-slate-950 border border-slate-800 shadow-inner group-hover:scale-105 transition-transform"
                   style={{ boxShadow: isEquipped ? `inset 0 0 10px ${tool.color}22` : undefined }}
                 >
                   {getToolIcon(tool.icon, tool.color)}
@@ -134,7 +143,7 @@ export default function ToolsTab({ tools, worlds, gameState, onUnlockTool, onEqu
 
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between gap-1">
-                    <h3 className="font-bold text-slate-200 text-sm truncate">{tool.name}</h3>
+                    <h3 className="font-extrabold text-slate-100 text-sm truncate">{tool.name}</h3>
                     <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-800/80 border border-slate-700 text-slate-400">
                       Req: World {tool.requiredWorld}
                     </span>
@@ -163,16 +172,19 @@ export default function ToolsTab({ tools, worlds, gameState, onUnlockTool, onEqu
               <div className="flex items-center justify-between mt-4 border-t border-slate-800/40 pt-3">
                 {isUnlocked ? (
                   isEquipped ? (
-                    <span className="flex items-center gap-1 text-emerald-400 font-bold text-xs select-none">
-                      <Check className="w-3.5 h-3.5 stroke-[3]" /> EQUIPPED
+                    <span className="flex items-center gap-1 text-emerald-400 font-black text-xs select-none">
+                      <Check className="w-4 h-4 stroke-[3]" /> EQUIPPED
                     </span>
                   ) : (
                     <button
-                      onClick={() => onEquipTool(tool.id)}
-                      className="px-3.5 py-1.5 rounded-lg bg-slate-800 text-slate-200 hover:bg-slate-700 active:scale-95 text-xs font-bold transition-all cursor-pointer"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onEquipTool(tool.id);
+                      }}
+                      className="px-4 py-1.5 rounded-lg bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 hover:bg-emerald-500 hover:text-slate-950 active:scale-95 text-xs font-black transition-all cursor-pointer shadow-sm"
                       id={`tool-equip-btn-${tool.id}`}
                     >
-                      EQUIP
+                      EQUIP WEAPON
                     </button>
                   )
                 ) : !worldReached ? (
@@ -182,11 +194,14 @@ export default function ToolsTab({ tools, worlds, gameState, onUnlockTool, onEqu
                   </div>
                 ) : (
                   <button
-                    onClick={() => onUnlockTool(tool.id)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (canAfford) onUnlockTool(tool.id);
+                    }}
                     disabled={!canAfford}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-bold text-xs transition-all cursor-pointer ${
+                    className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg font-black text-xs transition-all cursor-pointer ${
                       canAfford
-                        ? 'bg-amber-500 hover:bg-amber-400 text-slate-950'
+                        ? 'bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-md active:scale-95'
                         : 'bg-slate-950 border border-slate-800 text-slate-500 cursor-not-allowed'
                     }`}
                     id={`tool-unlock-btn-${tool.id}`}

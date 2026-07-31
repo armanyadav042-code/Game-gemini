@@ -124,11 +124,17 @@ export default function App() {
         const parsed = JSON.parse(savedStateRaw);
         
         // Safely merge with default state so old save structures do not crash
+        const unlocked = Array.from(new Set(['pickaxe', ...(parsed.toolsUnlocked || [])]));
+        const equipped = parsed.equippedToolId && unlocked.includes(parsed.equippedToolId) 
+          ? parsed.equippedToolId 
+          : unlocked[0] || 'pickaxe';
+
         finalState = {
           ...DEFAULT_GAME_STATE(Date.now()),
           ...parsed,
           upgrades: { ...parsed.upgrades },
-          toolsUnlocked: [...(parsed.toolsUnlocked || ['pickaxe'])],
+          toolsUnlocked: unlocked,
+          equippedToolId: equipped,
           helpers: { ...parsed.helpers },
           achievementsClaimed: [...(parsed.achievementsClaimed || [])]
         };
