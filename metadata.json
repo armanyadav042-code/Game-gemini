@@ -1,0 +1,6 @@
+{
+  "name": "Idle Wall Destroyer",
+  "description": "An addictive browser idle game where you smash walls layer by layer, buy upgrades, hire drones, unlock powerful tools, and progress through multiple worlds with prestige bonuses.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
