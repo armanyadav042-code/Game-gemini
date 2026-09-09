@@ -140,21 +140,35 @@ func _build_model() -> void:
 	model.scale = Vector3(0.93, 0.93, 0.93)
 	add_child(model)
 
+	# suit fabrics (procedural: base color + web lattice, see Proctex.make_suit)
+	var suit_col := Color(0.075, 0.145, 0.29)
+	var suit_web := Color(0.012, 0.02, 0.03)
 	var mat_suit := StandardMaterial3D.new()
-	mat_suit.albedo_color = Color(0.09, 0.16, 0.30)
-	mat_suit.roughness = 0.62
+	mat_suit.albedo_texture = Proctex.make_suit(suit_col, suit_web, 256, 256)
+	mat_suit.roughness = 0.58
+	var mat_mask := StandardMaterial3D.new()
+	mat_mask.albedo_texture = Proctex.make_suit(suit_col.darkened(0.12), suit_web, 256, 256)
+	mat_mask.roughness = 0.42
 	var mat_accent := StandardMaterial3D.new()
-	mat_accent.albedo_color = Color(0.72, 0.10, 0.12)
-	mat_accent.roughness = 0.55
+	mat_accent.albedo_texture = Proctex.make_suit(Color(0.66, 0.09, 0.11), Color(0.16, 0.02, 0.03), 128, 128)
+	mat_accent.roughness = 0.5
 	var mat_lens := StandardMaterial3D.new()
 	mat_lens.albedo_color = Color(0.95, 0.97, 1.0)
 	mat_lens.emission_enabled = true
 	mat_lens.emission = Color(0.85, 0.92, 1.0)
-	mat_lens.emission_energy_multiplier = 2.2
+	mat_lens.emission_energy_multiplier = 3.2
 	var mat_metal := StandardMaterial3D.new()
 	mat_metal.albedo_color = Color(0.35, 0.37, 0.40)
 	mat_metal.metallic = 0.85
 	mat_metal.roughness = 0.35
+	var mat_emblem := StandardMaterial3D.new()
+	mat_emblem.albedo_color = Color(0.02, 0.02, 0.025)
+	mat_emblem.roughness = 0.38
+	var mat_led := StandardMaterial3D.new()
+	mat_led.albedo_color = Color(0.4, 0.02, 0.02)
+	mat_led.emission_enabled = true
+	mat_led.emission = Color(1.0, 0.12, 0.08)
+	mat_led.emission_energy_multiplier = 2.5
 
 	var hips := Node3D.new()
 	hips.name = "Hips"
@@ -170,6 +184,7 @@ func _build_model() -> void:
 	bones["chest"] = chest
 	_add_capsule(chest, 0.27, 0.5, mat_suit, Vector3(0, 0.05, 0))
 	_add_box(chest, Vector3(0.17, 0.17, 0.05), mat_accent, Vector3(0, 0.08, -0.26))
+	_add_spider(chest, mat_emblem)
 
 	var head := Node3D.new()
 	head.name = "Head"
@@ -181,12 +196,12 @@ func _build_model() -> void:
 	hm.radius = 0.2
 	hm.height = 0.4
 	head_mi.mesh = hm
-	head_mi.material_override = mat_suit
+	head_mi.material_override = mat_mask
 	head.add_child(head_mi)
-	eye_l = _add_box(head, Vector3(0.1, 0.055, 0.04), mat_lens, Vector3(-0.08, 0.03, -0.17))
-	eye_r = _add_box(head, Vector3(0.1, 0.055, 0.04), mat_lens, Vector3(0.08, 0.03, -0.17))
-	eye_l.rotation_degrees = Vector3(0, 18, 0)
-	eye_r.rotation_degrees = Vector3(0, -18, 0)
+	eye_l = _add_box(head, Vector3(0.105, 0.06, 0.045), mat_lens, Vector3(-0.08, 0.035, -0.165))
+	eye_r = _add_box(head, Vector3(0.105, 0.06, 0.045), mat_lens, Vector3(0.08, 0.035, -0.165))
+	eye_l.rotation_degrees = Vector3(0, 18, -20)
+	eye_r.rotation_degrees = Vector3(0, -18, 20)
 
 	for side in [-1.0, 1.0]:
 		var s := "l" if side < 0.0 else "r"
@@ -202,11 +217,16 @@ func _build_model() -> void:
 		fore.position = Vector3(0, -0.34, 0)
 		bones["fore_" + s] = fore
 		_add_capsule(fore, 0.075, 0.30, mat_suit, Vector3(0, -0.15, 0))
-		_add_box(fore, Vector3(0.11, 0.13, 0.11), mat_metal, Vector3(0, -0.30, -0.02))
+		# wrist web-shooter: forward barrel + red fluid light
+		_add_box(fore, Vector3(0.1, 0.12, 0.1), mat_metal, Vector3(0, -0.29, -0.01))
+		var barrel := _add_box(fore, Vector3(0.05, 0.05, 0.14), mat_metal, Vector3(0.045 * side, -0.29, -0.07))
+		barrel.name = "Shooter" + s
+		_add_box(fore, Vector3(0.02, 0.02, 0.012), mat_led, Vector3(0.045 * side, -0.29, -0.14))
 		var hand := Node3D.new()
 		hand.name = "Hand" + s
 		fore.add_child(hand)
-		hand.position = Vector3(0, -0.30, -0.02)
+		hand.position = Vector3(0, -0.32, -0.02)
+		_add_box(hand, Vector3(0.095, 0.1, 0.11), mat_accent, Vector3(0, -0.01, -0.005))
 		if side < 0.0:
 			hand_l_node = hand
 		else:
@@ -226,7 +246,9 @@ func _build_model() -> void:
 		shin.position = Vector3(0, -0.46, 0)
 		bones["shin_" + s] = shin
 		_add_capsule(shin, 0.085, 0.36, mat_suit, Vector3(0, -0.19, 0))
-		_add_box(shin, Vector3(0.12, 0.09, 0.28), mat_accent, Vector3(0, -0.4, -0.05))
+		# crimson boot
+		_add_box(shin, Vector3(0.125, 0.1, 0.26), mat_accent, Vector3(0, -0.34, -0.04))
+		_add_box(shin, Vector3(0.11, 0.07, 0.14), mat_accent, Vector3(0, -0.34, -0.19))
 
 	# web lines (unit cylinder from base, +Y along the line)
 	var web_mat := StandardMaterial3D.new()
@@ -277,6 +299,42 @@ func _add_box(parent: Node3D, size: Vector3, mat: Material, off: Vector3) -> Mes
 	mi.position = off
 	parent.add_child(mi)
 	return mi
+
+
+## Small 3D spider emblem on the chest (body + head + 6 legs).
+func _add_spider(parent: Node3D, mat: Material) -> void:
+	var sp := Node3D.new()
+	sp.name = "Spider"
+	parent.add_child(sp)
+	sp.position = Vector3(0, 0.2, -0.255)
+	var body := MeshInstance3D.new()
+	var bm := SphereMesh.new()
+	bm.radius = 0.038
+	bm.height = 0.076
+	body.mesh = bm
+	body.material_override = mat
+	body.position = Vector3(0, -0.022, 0)
+	sp.add_child(body)
+	var headm := MeshInstance3D.new()
+	var hm := SphereMesh.new()
+	hm.radius = 0.024
+	hm.height = 0.048
+	headm.mesh = hm
+	headm.material_override = mat
+	headm.position = Vector3(0, 0.018, 0.002)
+	sp.add_child(headm)
+	for side in [-1.0, 1.0]:
+		for k in 3:
+			var leg := MeshInstance3D.new()
+			var lm := CylinderMesh.new()
+			lm.top_radius = 0.0045
+			lm.bottom_radius = 0.0045
+			lm.height = 0.085
+			leg.mesh = lm
+			leg.material_override = mat
+			leg.rotation_degrees = Vector3(0, 0, -side * (45.0 + float(k) * 30.0))
+			leg.position = Vector3(0, 0.014, 0)
+			sp.add_child(leg)
 
 
 func _build_camera() -> void:

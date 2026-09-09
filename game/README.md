@@ -7,8 +7,10 @@ spider-sense slow-mo, enemy AI (thugs, armed thugs, a brute, a fugitive),
 3 missions + free roam, full HUD/minimap, and 100% synthesized audio.
 
 **Every asset is generated in code** — the game runs with zero downloads.
-See `docs/` for the step-by-step path to swap in your own Blender models,
-PolyHaven textures/HDRIs, and Pixabay audio (all free/CC0).
+That includes the hero (web-patterned suit, glowing mask lenses, wrist
+web-shooters, chest emblem) and the enemy cast (thug / armed / brute /
+fugitive). See `docs/` for the optional path to swap in your own Blender
+models, PolyHaven textures/HDRIs, and Pixabay audio (all free/CC0).
 
 ## Requirements
 

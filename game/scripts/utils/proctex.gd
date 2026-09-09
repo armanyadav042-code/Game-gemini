@@ -133,6 +133,47 @@ static func make_diamond(size: int = 128) -> ImageTexture:
 	return ImageTexture.create_from_image(img)
 
 
+## Spidersuit fabric: base color + fine weave noise + a black web lattice
+## (12 radial spokes + concentric sagging rings) that tiles like suit panels.
+static func make_suit(base: Color, web: Color, w: int = 256, h: int = 256) -> ImageTexture:
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 7
+	var img := _noise_tile(rng, 128, 128, base, 0.03)
+	img.resize(w, h, Image.INTERPOLATE_NEAREST)
+	var c := Vector2(w / 2.0, h / 2.0)
+	var maxr := w * 0.48
+	# radial spokes
+	for s in 12:
+		var a := TAU * float(s) / 12.0
+		var dirv := Vector2(cos(a), sin(a))
+		for t in range(0, int(maxr), 2):
+			_pencil(img, c + dirv * float(t), web, 1)
+	# concentric rings, sagging between spokes
+	for r in [0.16, 0.30, 0.42, 0.56, 0.72, 0.90]:
+		var rad := maxr * r
+		for i in 220:
+			var a := TAU * float(i) / 220.0
+			var sag := 1.0 + 0.05 * sin(a * 6.0)
+			_pencil(img, c + Vector2(cos(a), sin(a)) * (rad * sag), web, 1)
+	# hub dot
+	_pencil(img, c, web, 3)
+	return ImageTexture.create_from_image(img)
+
+
+static func _pencil(img: Image, p: Vector2, col: Color, r: int) -> void:
+	var x0 := int(p.x) - r
+	var y0 := int(p.y) - r
+	var w := img.get_width()
+	var h := img.get_height()
+	for y in range(y0, y0 + r * 2 + 1):
+		if y < 0 or y >= h:
+			continue
+		for x in range(x0, x0 + r * 2 + 1):
+			if x < 0 or x >= w:
+				continue
+			img.set_pixel(x, y, col)
+
+
 ## Box mesh with per-face UVs scaled so facade/asphalt textures tile at real-world size.
 ## uv_scale = (world_width / tile_width, world_height / tile_height)
 static func scaled_box(w: float, h: float, d: float, uv_scale: Vector2) -> BoxMesh:

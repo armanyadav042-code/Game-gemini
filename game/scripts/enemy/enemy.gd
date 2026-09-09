@@ -445,6 +445,20 @@ func _build_model() -> void:
 	head.add_child(head_mi)
 	_add_box(head, mat_eye, Vector3(0.09, 0.04, 0.03), Vector3(-0.07, 0.02, -0.17))
 	_add_box(head, mat_eye, Vector3(0.09, 0.04, 0.03), Vector3(0.07, 0.02, -0.17))
+	# type-identifying gear
+	match type:
+		"thug":
+			_add_box(head, _mk_mat(Color(0.12, 0.10, 0.09), 0.95), Vector3(0.3, 0.12, 0.34), Vector3(0, 0.1, 0.02))
+		"armed":
+			_add_box(head, _mk_mat(Color(0.3, 0.26, 0.16), 0.9), Vector3(0.3, 0.1, 0.32), Vector3(0, 0.11, 0))
+			_add_box(head, _mk_mat(Color(0.26, 0.22, 0.13), 0.9), Vector3(0.3, 0.03, 0.14), Vector3(0, 0.08, -0.2))
+		"brute":
+			for side in [-1.0, 1.0]:
+				_add_box(chest, _mk_mat(Color(0.16, 0.05, 0.05), 0.6), Vector3(0.18, 0.12, 0.22), Vector3(0.36 * side, 0.3, 0))
+			_add_box(hips, _mk_mat(Color(0.08, 0.08, 0.09), 0.7), Vector3(0.37, 0.09, 0.25), Vector3(0, -0.1, 0))
+		"fugitive":
+			_add_box(head, _mk_mat(Color(0.55, 0.12, 0.1), 0.85), Vector3(0.27, 0.13, 0.32), Vector3(0, 0.1, 0.01))
+			_add_box(chest, _mk_mat(Color(0.5, 0.3, 0.08), 0.8), Vector3(0.32, 0.36, 0.15), Vector3(0, 0.06, 0.29))
 
 	for side in [-1.0, 1.0]:
 		var s := "l" if side < 0.0 else "r"
