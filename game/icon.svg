@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">
+  <rect width="128" height="128" rx="22" fill="#101418"/>
+  <g stroke="#c8282e" stroke-width="3" opacity="0.85">
+    <line x1="64" y1="64" x2="10" y2="10"/>
+    <line x1="64" y1="64" x2="118" y2="10"/>
+    <line x1="64" y1="64" x2="10" y2="118"/>
+    <line x1="64" y1="64" x2="118" y2="118"/>
+    <line x1="64" y1="64" x2="64" y2="6"/>
+    <line x1="64" y1="64" x2="64" y2="122"/>
+    <line x1="64" y1="64" x2="6" y2="64"/>
+    <line x1="64" y1="64" x2="122" y2="64"/>
+  </g>
+  <g stroke="#c8282e" stroke-width="2" fill="none" opacity="0.85">
+    <path d="M 45 26 Q 64 42 83 26"/>
+    <path d="M 45 102 Q 64 86 83 102"/>
+    <path d="M 26 45 Q 42 64 26 83"/>
+    <path d="M 102 45 Q 86 64 102 83"/>
+    <path d="M 26 45 Q 64 26 102 45"/>
+    <path d="M 26 83 Q 64 102 102 83"/>
+  </g>
+  <path d="M64 38 L92 64 L64 90 L36 64 Z" fill="#c8282e"/>
+  <ellipse cx="64" cy="57" rx="7" ry="9" fill="#101418"/>
+  <ellipse cx="64" cy="72" rx="8" ry="11" fill="#101418"/>
+</svg>
