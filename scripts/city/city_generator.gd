@@ -101,7 +101,7 @@ func _build(world: Node3D, seed: int) -> Dictionary:
 				specs.append({"pos": c + Vector2(11.5, 0), "w": 19.0, "d": 40.0, "h": hb})
 	# guarantee skyline variety: 3 tall towers + SE mid-tower + NW tower
 	var shuffled := outer_blocks.duplicate()
-	rng.shuffle(shuffled)
+	_shuffle(rng, shuffled)
 	for b in shuffled.slice(0, 3):
 		var best := -1
 		for k in specs.size():
@@ -209,6 +209,16 @@ func _build(world: Node3D, seed: int) -> Dictionary:
 	return info
 
 
+## In-place Fisher-Yates with the project's seeded RNG (RandomNumberGenerator has
+## no shuffle() method, and this keeps generation deterministic per seed).
+func _shuffle(rng: RandomNumberGenerator, arr: Array) -> void:
+	for i in range(arr.size() - 1, 0, -1):
+		var j := rng.randi_range(0, i)
+		var tmp = arr[i]
+		arr[i] = arr[j]
+		arr[j] = tmp
+
+
 func _pick_height(rng: RandomNumberGenerator, podium_bias: float) -> float:
 	var r := rng.randf()
 	var floors: int
@@ -244,8 +254,9 @@ func _add_building(world: Node3D, pos: Vector2, w: float, d: float, h: float,
 
 	# roof slab
 	var roof := MeshInstance3D.new()
-	roof.mesh = BoxMesh.new()
-	roof.mesh.size = Vector3(w + 0.8, 0.5, d + 0.8)
+	var roof_msh := BoxMesh.new()
+	roof_msh.size = Vector3(w + 0.8, 0.5, d + 0.8)
+	roof.mesh = roof_msh
 	roof.material_override = roof_mat
 	roof.position = Vector3(pos.x, h + 0.25, pos.y)
 	world.add_child(roof)
@@ -255,8 +266,9 @@ func _add_building(world: Node3D, pos: Vector2, w: float, d: float, h: float,
 	var ac_count := 0 if is_anchor else rng.randi_range(0, 3)
 	for a in ac_count:
 		var ac := MeshInstance3D.new()
-		ac.mesh = BoxMesh.new()
-		ac.mesh.size = Vector3(rng.randf_range(1.6, 2.6), 1.2, rng.randf_range(1.6, 2.6))
+		var ac_msh := BoxMesh.new()
+		ac_msh.size = Vector3(rng.randf_range(1.6, 2.6), 1.2, rng.randf_range(1.6, 2.6))
+		ac.mesh = ac_msh
 		ac.material_override = metal_mat
 		ac.position = rpos + Vector3(rng.randf_range(-w * 0.3, w * 0.3), 0.6, rng.randf_range(-d * 0.3, d * 0.3))
 		world.add_child(ac)
@@ -273,14 +285,15 @@ func _add_building(world: Node3D, pos: Vector2, w: float, d: float, h: float,
 	if h > 25.0 or is_anchor:
 		for edge in 4:
 			var rail := MeshInstance3D.new()
-			rail.mesh = BoxMesh.new()
+			var rail_msh := BoxMesh.new()
 			match edge:
 				0, 1:
-					rail.mesh.size = Vector3(w + 0.8, 0.9, 0.12)
+					rail_msh.size = Vector3(w + 0.8, 0.9, 0.12)
 					rail.position = rpos + Vector3(0, 0.45, (d / 2 + 0.34) * (1.0 if edge == 0 else -1.0))
 				_:
-					rail.mesh.size = Vector3(0.12, 0.9, d + 0.8)
+					rail_msh.size = Vector3(0.12, 0.9, d + 0.8)
 					rail.position = rpos + Vector3((w / 2 + 0.34) * (1.0 if edge == 2 else -1.0), 0.45, 0)
+			rail.mesh = rail_msh
 			rail.material_override = metal_mat
 			world.add_child(rail)
 
@@ -294,14 +307,16 @@ func _add_building(world: Node3D, pos: Vector2, w: float, d: float, h: float,
 			if py < 5.0:
 				break
 			var plat := MeshInstance3D.new()
-			plat.mesh = BoxMesh.new()
-			plat.mesh.size = Vector3(1.8, 0.12, 2.6)
+			var plat_msh := BoxMesh.new()
+			plat_msh.size = Vector3(1.8, 0.12, 2.6)
+			plat.mesh = plat_msh
 			plat.material_override = metal_mat
 			plat.position = Vector3(pos.x + side * (w / 2 + 0.9), py, pos.y + zoff + (f % 2) * 4.0)
 			world.add_child(plat)
 			var rail2 := MeshInstance3D.new()
-			rail2.mesh = BoxMesh.new()
-			rail2.mesh.size = Vector3(0.08, 0.8, 2.6)
+			var rail2_msh := BoxMesh.new()
+			rail2_msh.size = Vector3(0.08, 0.8, 2.6)
+			rail2.mesh = rail2_msh
 			rail2.material_override = metal_mat
 			rail2.position = plat.position + Vector3(side * 0.85, 0.4, 0)
 			world.add_child(rail2)
@@ -312,8 +327,9 @@ func _add_building(world: Node3D, pos: Vector2, w: float, d: float, h: float,
 		var idx := 0
 		for ly in range(first, int(h - 4), 17):
 			var ledge := MeshInstance3D.new()
-			ledge.mesh = BoxMesh.new()
-			ledge.mesh.size = Vector3(w + 1.4, 0.6, d + 1.4)
+			var ledge_msh := BoxMesh.new()
+			ledge_msh.size = Vector3(w + 1.4, 0.6, d + 1.4)
+			ledge.mesh = ledge_msh
 			ledge.material_override = roof_mat
 			ledge.position = Vector3(pos.x, float(ly), pos.y)
 			world.add_child(ledge)
@@ -356,16 +372,18 @@ func _add_lamps(world: Node3D, metal_mat: Material, lamp_mat: Material, rng: Ran
 				world.add_child(pole)
 				var arm_dir := Vector3(1, 0, 0).rotated(Vector3.UP, rng.randf() * TAU)
 				var arm := MeshInstance3D.new()
-				arm.mesh = BoxMesh.new()
-				arm.mesh.size = Vector3(1.6, 0.08, 0.08)
+				var arm_msh := BoxMesh.new()
+				arm_msh.size = Vector3(1.6, 0.08, 0.08)
+				arm.mesh = arm_msh
 				arm.material_override = metal_mat
 				arm.position = p + Vector3(0, 5.3, 0) + arm_dir * 0.8
 				arm.look_at(p + Vector3(0, 5.3, 0) + arm_dir * 4.0)
 				world.add_child(arm)
 				var bulb := MeshInstance3D.new()
-				bulb.mesh = SphereMesh.new()
-				bulb.mesh.radius = 0.16
-				bulb.mesh.height = 0.32
+				var bulb_msh := SphereMesh.new()
+				bulb_msh.radius = 0.16
+				bulb_msh.height = 0.32
+				bulb.mesh = bulb_msh
 				bulb.material_override = lamp_mat
 				bulb.position = arm.position + arm_dir * 1.5
 				world.add_child(bulb)
@@ -393,15 +411,17 @@ func _add_cars(world: Node3D, car_mats: Array, dark_mat: Material, rng: RandomNu
 		world.add_child(sb)
 		var mat: Material = car_mats[rng.randi_range(0, car_mats.size() - 1)]
 		var body := MeshInstance3D.new()
-		body.mesh = BoxMesh.new()
-		body.mesh.size = Vector3(1.9, 0.7, 4.3)
+		var body_msh := BoxMesh.new()
+		body_msh.size = Vector3(1.9, 0.7, 4.3)
+		body.mesh = body_msh
 		body.material_override = mat
 		body.position = Vector3(p.x, 0.55, p.z)
 		body.rotation_degrees = sb.rotation_degrees
 		world.add_child(body)
 		var cabin := MeshInstance3D.new()
-		cabin.mesh = BoxMesh.new()
-		cabin.mesh.size = Vector3(1.7, 0.6, 2.1)
+		var cabin_msh := BoxMesh.new()
+		cabin_msh.size = Vector3(1.7, 0.6, 2.1)
+		cabin.mesh = cabin_msh
 		cabin.material_override = dark_mat
 		cabin.position = Vector3(p.x, 1.2, p.z - 0.3)
 		cabin.rotation_degrees = sb.rotation_degrees
@@ -414,8 +434,9 @@ func _add_dumpsters(world: Node3D, metal_mat: Material, dark_mat: Material, rng:
 		if absf(p.x) < 50.0 and absf(p.z) < 50.0:
 			p.x += 55.0
 		var mi := MeshInstance3D.new()
-		mi.mesh = BoxMesh.new()
-		mi.mesh.size = Vector3(2.4, 1.2, 1.3)
+		var mi_msh := BoxMesh.new()
+		mi_msh.size = Vector3(2.4, 1.2, 1.3)
+		mi.mesh = mi_msh
 		mi.material_override = metal_mat
 		mi.position = p + Vector3(0, 0.6, 0)
 		mi.rotation_degrees = Vector3(0, rng.randf() * 90.0, 0)
@@ -438,15 +459,17 @@ func _add_benches(world: Node3D, dark_mat: Material, rng: RandomNumberGenerator)
 	]
 	for s in spots:
 		var mi := MeshInstance3D.new()
-		mi.mesh = BoxMesh.new()
-		mi.mesh.size = Vector3(2.0, 0.45, 0.5)
+		var mi_msh := BoxMesh.new()
+		mi_msh.size = Vector3(2.0, 0.45, 0.5)
+		mi.mesh = mi_msh
 		mi.material_override = dark_mat
 		mi.position = s + Vector3(0, 0.22, 0)
 		mi.rotation_degrees = Vector3(0, rng.randf() * 180.0, 0)
 		world.add_child(mi)
 		var back := MeshInstance3D.new()
-		back.mesh = BoxMesh.new()
-		back.mesh.size = Vector3(2.0, 0.5, 0.08)
+		var back_msh := BoxMesh.new()
+		back_msh.size = Vector3(2.0, 0.5, 0.08)
+		back.mesh = back_msh
 		back.material_override = dark_mat
 		back.position = mi.position + Vector3(0, 0.45, -0.24)
 		back.rotation_degrees = mi.rotation_degrees
@@ -477,8 +500,9 @@ func _add_edge_walls(world: Node3D, concrete_mat: Material) -> void:
 		sb.add_child(cs)
 		world.add_child(sb)
 		var mi := MeshInstance3D.new()
-		mi.mesh = BoxMesh.new()
-		mi.mesh.size = size
+		var mi_msh := BoxMesh.new()
+		mi_msh.size = size
+		mi.mesh = mi_msh
 		mi.material_override = concrete_mat
 		mi.position = pos
 		world.add_child(mi)
@@ -489,9 +513,9 @@ func _setup_lighting(world: Node3D) -> void:
 	_env.background_mode = Environment.BG_SKY
 	var sky := Sky.new()
 	_sky_mat = ProceduralSkyMaterial.new()
-	sky.material = _sky_mat
+	sky.sky_material = _sky_mat
 	_env.sky = sky
-	_env.tonemap_mode = Environment.TONE_MAP_ACES
+	_env.tonemap_mode = Environment.TONE_MAPPER_ACES
 	_env.glow_enabled = true
 	_env.glow_intensity = 0.4
 	_env.glow_bloom = 0.06
@@ -543,13 +567,15 @@ func _apply_sky(world: Node3D, night: bool) -> void:
 		sun.light_energy = 1.7
 		sun.light_color = Color(1.0, 0.96, 0.9)
 		sun.rotation_degrees = Vector3(-55, -30, 0)
-	env.sky.material = mat
+	env.sky.sky_material = mat
 
 
 func _tex_mat(tex: ImageTexture) -> StandardMaterial3D:
-	tex.repeat_enabled = true
 	var m := StandardMaterial3D.new()
 	m.albedo_texture = tex
+	# BaseMaterial3D.texture_repeat is a bool (default true) in Godot 4.2+; tiling
+	# is what the generated facade/asphalt/roof UVs assume.
+	m.texture_repeat = true
 	m.roughness = 0.85
 	m.metallic = 0.02
 	return m

@@ -174,45 +174,48 @@ static func _pencil(img: Image, p: Vector2, col: Color, r: int) -> void:
 			img.set_pixel(x, y, col)
 
 
+## Rescales the UV channel of a primitive mesh's first surface and returns the baked mesh.
+## (PrimitiveMesh surfaces are generated on demand, so the UVs are read with
+## `get_mesh_arrays()` and baked into an ArrayMesh.)
+static func _retex_primitive(src: PrimitiveMesh, uv_scale: Vector2, vertex_offset: Vector3) -> Mesh:
+	var arr: Array = src.get_mesh_arrays()
+	var uvs: PackedVector2Array = arr[Mesh.ARRAY_TEX_UV]
+	if uv_scale != Vector2.ONE:
+		for i in uvs.size():
+			var u := uvs[i] * uv_scale
+			uvs[i] = u
+		arr[Mesh.ARRAY_TEX_UV] = uvs
+	if vertex_offset != Vector3.ZERO:
+		var verts: PackedVector3Array = arr[Mesh.ARRAY_VERTEX]
+		for i in verts.size():
+			var v := verts[i] + vertex_offset
+			verts[i] = v
+		arr[Mesh.ARRAY_VERTEX] = verts
+	var out := ArrayMesh.new()
+	out.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arr)
+	return out
+
+
 ## Box mesh with per-face UVs scaled so facade/asphalt textures tile at real-world size.
 ## uv_scale = (world_width / tile_width, world_height / tile_height)
-static func scaled_box(w: float, h: float, d: float, uv_scale: Vector2) -> BoxMesh:
+static func scaled_box(w: float, h: float, d: float, uv_scale: Vector2) -> Mesh:
 	var m := BoxMesh.new()
 	m.size = Vector3(w, h, d)
-	var st := m.create_surface_tool(0)
-	var arr := st.get_arrays()
-	# per-vertex layout: pos(3) normal(3) uv(2) -> uvs at offset 6
-	for i in range(6, arr.size(), 8):
-		arr[i] = arr[i] * uv_scale.x
-		arr[i + 1] = arr[i + 1] * uv_scale.y
-	st.commit(m, 0)
-	return m
+	return _retex_primitive(m, uv_scale, Vector3.ZERO)
 
 
 ## Plane mesh with tiling UVs.
-static func scaled_plane(w: float, d: float, uv_scale: float) -> PlaneMesh:
+static func scaled_plane(w: float, d: float, uv_scale: float) -> Mesh:
 	var m := PlaneMesh.new()
 	m.size = Vector2(w, d)
-	var st := m.create_surface_tool(0)
-	var arr := st.get_arrays()
-	# per-vertex layout: pos(3) normal(3) uv(2) -> uvs at offset 6
-	for i in range(6, arr.size(), 8):
-		arr[i] = arr[i] * uv_scale
-		arr[i + 1] = arr[i + 1] * uv_scale
-	st.commit(m, 0)
-	return m
+	return _retex_primitive(m, Vector2(uv_scale, uv_scale), Vector3.ZERO)
 
 
 ## Cylinder mesh whose origin is at its base (for web lines: node +Y points along the line).
-static func unit_cyl_from_base(radius: float, segments: int = 6) -> CylinderMesh:
+static func unit_cyl_from_base(radius: float, segments: int = 6) -> Mesh:
 	var m := CylinderMesh.new()
 	m.top_radius = radius
 	m.bottom_radius = radius
 	m.height = 1.0
 	m.radial_segments = segments
-	var st := m.create_surface_tool(0)
-	var arr := st.get_arrays()
-	for i in range(0, arr.size(), 8):
-		arr[i + 1] += 0.5
-	st.commit(m, 0)
-	return m
+	return _retex_primitive(m, Vector2.ONE, Vector3(0, 0.5, 0))

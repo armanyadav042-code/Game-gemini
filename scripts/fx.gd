@@ -31,7 +31,7 @@ func spawn_hit_spark(pos: Vector3, heavy: bool) -> void:
 	sm.radius = 0.22
 	sm.height = 0.44
 	sm.radial_segments = 8
-	sm.ring_segments = 6
+	sm.rings = 6
 	mi.mesh = sm
 	var mat: StandardMaterial3D = _spark_mat_h if heavy else _spark_mat_o
 	mat = mat.duplicate() as StandardMaterial3D
@@ -54,7 +54,7 @@ func spawn_dust(pos: Vector3, count: int) -> void:
 		sm.radius = 0.12
 		sm.height = 0.24
 		sm.radial_segments = 6
-		sm.ring_segments = 4
+		sm.rings = 4
 		mi.mesh = sm
 		var mat := _dust_mat.duplicate() as StandardMaterial3D
 		mi.material_override = mat
