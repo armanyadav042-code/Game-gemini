@@ -393,15 +393,20 @@ func _unhandled_input(event: InputEvent) -> void:
 			cam_pitch = clampf(cam_pitch - m.relative.y * sens, -1.05, 1.25)
 	elif event is InputEventJoypadMotion:
 		var jm := event as InputEventJoypadMotion
+		# InputEventJoypadMotion has no delta_time: apply the stick offset per event
+		# using the frame delta so pad sensitivity matches mouse sensitivity.
+		var jsens := 2.4 * get_process_delta_time() * GameManager.settings["sens"]
 		if jm.axis == JOY_AXIS_RIGHT_X:
-			cam_yaw -= jm.axis_value * jm.delta_time * 2.4
+			cam_yaw -= jm.axis_value * jsens
 		elif jm.axis == JOY_AXIS_RIGHT_Y:
-			cam_pitch = clampf(cam_pitch - jm.axis_value * jm.delta_time * 2.4, -1.05, 1.25)
-	elif event is InputEventMouseButton and event.pressed:
-		if event.button_index == MOUSE_BUTTON_WHEEL_UP:
-			_zoom(-0.35)
-		elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
-			_zoom(0.35)
+			cam_pitch = clampf(cam_pitch - jm.axis_value * jsens, -1.05, 1.25)
+	elif event is InputEventMouseButton:
+		var mb := event as InputEventMouseButton
+		if mb.pressed:
+			if mb.button_index == MOUSE_BUTTON_WHEEL_UP:
+				_zoom(-0.35)
+			elif mb.button_index == MOUSE_BUTTON_WHEEL_DOWN:
+				_zoom(0.35)
 
 	if event.is_action_pressed("jump"):
 		_jump_buf = JUMP_BUFFER
@@ -543,7 +548,7 @@ func _swing_step(delta: float) -> void:
 		_release_swing()
 		return
 	velocity.y -= SWING_GRAVITY * delta
-	velocity = velocity.clamp_length(0.0, 42.0)
+	velocity = velocity.limit_length(42.0)
 	var horiz := anchor - global_position
 	_set_target_yaw(Vector3(horiz.x, 0, horiz.z), 10.0)
 
@@ -849,7 +854,7 @@ func _on_attack_hit(body: Node) -> void:
 		Fx.spawn_hit_spark((body as Node3D).global_position, heavy)
 
 
-func take_damage(amount: float, dir: Vector3, _source: Node = null) -> void:
+func take_damage(amount: float, dir: Vector3, heavy: bool = false) -> void:
 	if GameManager.mode != GameManager.Mode.PLAY:
 		return
 	if invuln_t > 0.0 or zipping:
@@ -858,7 +863,7 @@ func take_damage(amount: float, dir: Vector3, _source: Node = null) -> void:
 	last_dmg_t = 0.0
 	combo_count = 0
 	AudioMan.play_sfx("hurt", global_position, randf_range(0.9, 1.1), -4.0)
-	_shake(0.35)
+	_shake(0.55 if heavy else 0.35)
 	GameManager.on_player_hurt(amount)
 	if is_on_floor():
 		velocity += dir * 5.0 + Vector3.UP * 1.5
@@ -900,7 +905,8 @@ func _shake(amp: float) -> void:
 
 
 func _ray_city(from: Vector3, to: Vector3, mask: int = CITY) -> Dictionary:
-	var q := PhysicsRayQueryParameters3D.create(from, to, [get_rid()], mask)
+	var q := PhysicsRayQueryParameters3D.create(from, to, mask)
+	q.exclude = [get_rid()]
 	return get_world_3d().direct_space_state.intersect_ray(q)
 
 

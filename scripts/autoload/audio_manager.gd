@@ -338,7 +338,7 @@ func _build_music() -> void:
 		var half := int(SR * 2.0)
 		for i in half:
 			var t := float(i) / SR
-			var env := minf(t / 0.5, (2.0 - t) / 0.5, 1.0)
+			var env := minf(minf(t / 0.5, (2.0 - t) / 0.5), 1.0)
 			var s := 0.0
 			for f in chords[c]:
 				s += sin(TAU * f * t) * 0.055 + sin(TAU * f * 1.004 * t) * 0.03
@@ -401,13 +401,15 @@ func play_sfx(name: String, pos: Vector3 = Vector3.INF, pitch: float = 1.0, vol_
 	if not sfx.has(name):
 		return
 	if pos != Vector3.INF:
-		var pa := PositionalAudioStream3D.new()
+		var pa := AudioStreamPlayer3D.new()
 		add_child(pa)
 		pa.stream = sfx[name]
 		pa.global_position = pos
 		pa.pitch_scale = pitch
 		pa.volume_db = vol_db
 		pa.max_distance = 70.0
+		# INVERSE_SQUARE_DISTANCE is the model that honours the max_distance cutoff below.
+		pa.attenuation_model = AudioStreamPlayer3D.ATTENUATION_INVERSE_SQUARE_DISTANCE
 		pa.finished.connect(func() -> void: pa.queue_free())
 		pa.play()
 		return

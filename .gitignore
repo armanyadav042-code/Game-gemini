@@ -1,11 +1,9 @@
-node_modules/
-build/
-dist/
-coverage/
-.DS_Store
-*.log
-.env*
-!.env.example
-
 # Godot
 .godot/
+.import/
+export_presets.cfg
+
+# OS / editor cruft
+.DS_Store
+*.tmp
+*.log

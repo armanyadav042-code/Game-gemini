@@ -359,7 +359,8 @@ func _face(dir: Vector3, rate: float, delta: float) -> void:
 func _los() -> bool:
 	var from := global_position + Vector3(0, 1.4, 0)
 	var to := player.global_position + Vector3(0, 1.2, 0)
-	var q := PhysicsRayQueryParameters3D.create(from, to, [get_rid(), player.get_rid()], CITY)
+	var q := PhysicsRayQueryParameters3D.create(from, to, CITY)
+	q.exclude = [get_rid(), player.get_rid()]
 	var res := get_world_3d().direct_space_state.intersect_ray(q)
 	return res.is_empty()
 

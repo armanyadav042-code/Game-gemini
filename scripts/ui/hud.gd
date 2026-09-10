@@ -271,7 +271,7 @@ func _build_marker() -> void:
 	_marker_dist.modulate = Color(1.0, 0.9, 0.35)
 	_marker_dist.outline_size = 8
 	_marker_dist.outline_modulate = Color(0, 0, 0, 0.85)
-	_marker_dist.billboard = Label3D.BILLBOARD_ENABLED
+	_marker_dist.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 	_marker_dist.position = Vector3(0, -1.7, 0)
 	_marker.add_child(_marker_dist)
 	_marker.visible = false
