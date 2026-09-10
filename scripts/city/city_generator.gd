@@ -110,11 +110,11 @@ func _build(world: Node3D, seed: int) -> Dictionary:
 				break
 		if best >= 0:
 			specs[best]["h"] = rng.randf_range(66.0, 88.0)
-	var se := specs[0]["pos"]
+	var se: Vector2 = specs[0]["pos"]
 	for s in specs:
 		if s["pos"].x + s["pos"].y > se.x + se.y:
 			se = s["pos"]
-	var nw := specs[0]["pos"]
+	var nw: Vector2 = specs[0]["pos"]
 	for s in specs:
 		if -s["pos"].x - s["pos"].y > -nw.x - nw.y:
 			nw = s["pos"]
@@ -377,8 +377,8 @@ func _add_lamps(world: Node3D, metal_mat: Material, lamp_mat: Material, rng: Ran
 				arm.mesh = arm_msh
 				arm.material_override = metal_mat
 				arm.position = p + Vector3(0, 5.3, 0) + arm_dir * 0.8
-				arm.look_at(p + Vector3(0, 5.3, 0) + arm_dir * 4.0)
 				world.add_child(arm)
+				arm.look_at(p + Vector3(0, 5.3, 0) + arm_dir * 4.0)
 				var bulb := MeshInstance3D.new()
 				var bulb_msh := SphereMesh.new()
 				bulb_msh.radius = 0.16
@@ -392,7 +392,7 @@ func _add_lamps(world: Node3D, metal_mat: Material, lamp_mat: Material, rng: Ran
 func _add_cars(world: Node3D, car_mats: Array, dark_mat: Material, rng: RandomNumberGenerator) -> void:
 	var lines := [-56.0, 0.0, 56.0]
 	for c in 16:
-		var line := lines[rng.randi_range(0, 2)]
+		var line: float = lines[rng.randi_range(0, 2)]
 		var horizontal := rng.randf() < 0.5
 		var t := rng.randf_range(-95.0, 95.0)
 		var off := rng.randf_range(4.5, 6.5) * (1.0 if rng.randf() < 0.5 else -1.0)
@@ -588,7 +588,7 @@ func _clear_point(p: Vector3, aabbs: Array) -> Vector3:
 		guard += 1
 		var inside := false
 		for b in aabbs:
-			if (b as Dictionary).has("aabb") and (b as Dictionary)["aabb"].has_point(a):
+			if (b as AABB).has_point(a):
 				inside = true
 				break
 		if not inside:

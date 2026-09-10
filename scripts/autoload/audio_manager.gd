@@ -346,7 +346,7 @@ func _build_music() -> void:
 	# arpeggio: 8th notes
 	var arp := [440.0, 523.25, 659.25, 523.25, 349.23, 440.0, 523.25, 440.0]
 	for k in 16:
-		var f := arp[k % arp.size()]
+		var f: float = arp[k % arp.size()]
 		_tone_into(buf, int(k * SR * 0.25), int(SR * 0.18), f, 0.10, 8.0)
 	music["explore"] = _wav(_fade_edges(buf), true)
 
@@ -365,7 +365,7 @@ func _build_music() -> void:
 	var bassline := [55.0, 55.0, 55.0, 65.41, 55.0, 55.0, 73.42, 65.41]
 	for k in 16:
 		var off := int(k * SR * 0.25)
-		var f := bassline[k % bassline.size()]
+		var f: float = bassline[k % bassline.size()]
 		for i in int(SR * 0.2):
 			if off + i >= n:
 				break
