@@ -182,7 +182,7 @@ func _spawn_free_roam() -> void:
 	for i in 8:
 		var p: Vector3 = spots[i % spots.size()]
 		var etype := "armed" if i % 3 == 2 else "thug"
-		var e := _spawn_enemy(etype, p)
+		var e = _spawn_enemy(etype, p)
 		e.waypoints = [
 			p + Vector3(7.0, 0, 0),
 			p + Vector3(-7.0, 0, 7.0),
@@ -249,7 +249,7 @@ func _tick_chase() -> void:
 		if (player.global_position - a).length() < 10.0:
 			mission_obj_idx = 1
 			var path: Array = city_info["fugitive_path"]
-			var f := _spawn_enemy("fugitive", path[0])
+			var f = _spawn_enemy("fugitive", path[0])
 			f.flee_path = path
 			_fugitive = f
 			AudioMan.play_music("combat")
@@ -281,7 +281,7 @@ func _tick_free_roam(delta: float) -> void:
 			var spots: Array = city_info["free_roam_spawns"]
 			for i in 2:
 				var p: Vector3 = spots[randi() % spots.size()]
-				var e := _spawn_enemy("armed" if randf() < 0.3 else "thug", p)
+				var e = _spawn_enemy("armed" if randf() < 0.3 else "thug", p)
 				e.waypoints = [p + Vector3(8.0, 0, 0), p + Vector3(-8.0, 0, 6.0)]
 	else:
 		_free_roam_t = 0.0
@@ -403,7 +403,7 @@ func on_enemy_windup(e: Node) -> void:
 	var d := (e as Node3D).global_position.distance_to(player.global_position)
 	if d > 13.0:
 		return
-	var to := (player.global_position - (e as Node3D).global_position).normalized()
+	var to: Vector3 = (player.global_position - (e as Node3D).global_position).normalized()
 	var facing := -(e as Node3D).global_transform.basis.z
 	if d > 6.0 and facing.dot(to) < 0.1:
 		return

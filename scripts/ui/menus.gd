@@ -205,7 +205,6 @@ func _build_result() -> void:
 	box.add_theme_constant_override("separation", 8)
 	_result.add_child(box)
 	_retry_btn = _button("RETRY MISSION", func() -> void: GameManager.retry())
-	_result.add_child(_retry_btn)
 	box.add_child(_retry_btn)
 	box.add_child(_button("FREE ROAM", func() -> void: GameManager.start_free_roam()))
 	box.add_child(_button("MAIN MENU", func() -> void: GameManager.to_menu()))

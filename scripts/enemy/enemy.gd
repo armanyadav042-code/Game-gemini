@@ -50,7 +50,7 @@ func _ready() -> void:
 	add_to_group("enemies")
 	collision_layer = ENEMY_LAYER
 	collision_mask = CITY | PLAYER_LAYER
-	floor_snap_angle = deg_to_rad(45.0)
+	floor_max_angle = deg_to_rad(45.0)
 	attack_cd = randf_range(0.4, 1.6)
 	match type:
 		"brute":

@@ -125,7 +125,7 @@ var hand_r_node: Node3D
 func _ready() -> void:
 	collision_layer = PLAYER_LAYER
 	collision_mask = CITY | ENEMY_LAYER
-	floor_snap_angle = deg_to_rad(45.0)
+	floor_max_angle = deg_to_rad(45.0)
 	_build_model()
 	_build_camera()
 	_build_areas()
@@ -388,14 +388,14 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventMouseMotion:
 		if Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
 			var m := event as InputEventMouseMotion
-			var sens := (0.0021 if swinging else 0.003) * GameManager.settings["sens"]
+			var sens: float = (0.0021 if swinging else 0.003) * GameManager.settings["sens"]
 			cam_yaw -= m.relative.x * sens
 			cam_pitch = clampf(cam_pitch - m.relative.y * sens, -1.05, 1.25)
 	elif event is InputEventJoypadMotion:
 		var jm := event as InputEventJoypadMotion
 		# InputEventJoypadMotion has no delta_time: apply the stick offset per event
 		# using the frame delta so pad sensitivity matches mouse sensitivity.
-		var jsens := 2.4 * get_process_delta_time() * GameManager.settings["sens"]
+		var jsens: float = 2.4 * get_process_delta_time() * GameManager.settings["sens"]
 		if jm.axis == JOY_AXIS_RIGHT_X:
 			cam_yaw -= jm.axis_value * jsens
 		elif jm.axis == JOY_AXIS_RIGHT_Y:
@@ -739,7 +739,7 @@ func _strike_impact() -> void:
 	if is_instance_valid(t) and t.has_method("take_damage"):
 		var tn: Variant = t
 		if tn.global_position.distance_to(global_position) < 3.5:
-			var dirv := (global_position - tn.global_position).normalized()
+			var dirv: Vector3 = (global_position - tn.global_position).normalized()
 			tn.take_damage(24.0, dirv * 8.0 + Vector3.UP * 3.0, true)
 			combo_count += 1
 			combo_timer = 4.0

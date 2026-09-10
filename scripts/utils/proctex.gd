@@ -5,8 +5,7 @@ class_name Proctex
 ## (see docs/ASSET_SOURCES.md) — the material slots (albedo/normal/rough) are ready.
 
 static func _noise_tile(rng: RandomNumberGenerator, w: int, h: int, base: Color, jitter: float) -> Image:
-	var img := Image.new()
-	img.create(w, h, false, Image.FORMAT_RGB8)
+	var img := Image.create(w, h, false, Image.FORMAT_RGB8)
 	for y in h:
 		for x in w:
 			var c := base
@@ -19,8 +18,7 @@ static func _noise_tile(rng: RandomNumberGenerator, w: int, h: int, base: Color,
 ## Building facade: wall mottle + floor slabs + window grid (dark glass / warm lit).
 ## Designed to repeat: 4 window bays wide x 4 floors tall per texture tile.
 static func make_facade(rng: RandomNumberGenerator, wall: Color, w: int = 256, h: int = 512) -> ImageTexture:
-	var img := Image.new()
-	img.create(w, h, false, Image.FORMAT_RGB8)
+	var img := Image.create(w, h, false, Image.FORMAT_RGB8)
 	img.fill(wall)
 	# fine mottle
 	var mottle := _noise_tile(rng, 128, 128, wall, 0.045)
@@ -115,8 +113,7 @@ static func make_metal(rng: RandomNumberGenerator, w: int = 128, h: int = 128) -
 
 ## Billboard-free glowing diamond used for objective markers.
 static func make_diamond(size: int = 128) -> ImageTexture:
-	var img := Image.new()
-	img.create(size, size, false, Image.FORMAT_RGBA8)
+	var img := Image.create(size, size, false, Image.FORMAT_RGBA8)
 	var c := size / 2
 	var col := Color(1.0, 0.85, 0.2)
 	var edge := Color(1.0, 1.0, 0.6)
@@ -150,7 +147,7 @@ static func make_suit(base: Color, web: Color, w: int = 256, h: int = 256) -> Im
 			_pencil(img, c + dirv * float(t), web, 1)
 	# concentric rings, sagging between spokes
 	for r in [0.16, 0.30, 0.42, 0.56, 0.72, 0.90]:
-		var rad := maxr * r
+		var rad: float = maxr * r
 		for i in 220:
 			var a := TAU * float(i) / 220.0
 			var sag := 1.0 + 0.05 * sin(a * 6.0)

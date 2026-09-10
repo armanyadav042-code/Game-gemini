@@ -34,7 +34,7 @@ class MinimapControl extends Control:
 
 	func _draw() -> void:
 		var c := Vector2(80, 80)
-		draw_circle(c, 78, Color(0.02, 0.03, 0.05, 0.55), true)
+		draw_circle(c, 78, Color(0.02, 0.03, 0.05, 0.55))
 		draw_arc(c, 78, 0, TAU, 64, Color(0.45, 0.55, 0.65, 0.8), 2.0, true)
 		var gm = GameManager
 		var player: Variant = gm.player
@@ -56,14 +56,14 @@ class MinimapControl extends Control:
 				continue
 			var sx := -(d.x * fz) + d.z * fx
 			var sy := -(d.x * fx + d.z * fz)
-			draw_circle(c + Vector2(sx, sy) * scale, 3.5, Color(1.0, 0.2, 0.15), true)
+			draw_circle(c + Vector2(sx, sy) * scale, 3.5, Color(1.0, 0.2, 0.15))
 		# objective
 		var op: Vector3 = gm.get_objective_world_pos()
 		if op != Vector3.ZERO:
 			var d: Vector3 = op - player.global_position
 			var sx := -(d.x * fz) + d.z * fx
 			var sy := -(d.x * fx + d.z * fz)
-			draw_circle(c + Vector2(sx, sy) * scale, 5.0, Color(1.0, 0.85, 0.2), true)
+			draw_circle(c + Vector2(sx, sy) * scale, 5.0, Color(1.0, 0.85, 0.2))
 		# north marker (world -Z)
 		var nd := Vector3(0, 0, -1)
 		var nsx := -(nd.x * fz) + nd.z * fx
@@ -275,7 +275,7 @@ func _build_marker() -> void:
 	_marker_dist.position = Vector3(0, -1.7, 0)
 	_marker.add_child(_marker_dist)
 	_marker.visible = false
-	get_tree().root.add_child(_marker)
+	get_tree().root.add_child.call_deferred(_marker)
 
 
 func _set_param(rect: ColorRect, name: String, v: float) -> void:
@@ -301,7 +301,7 @@ func _pop_combo() -> void:
 
 func _process(delta: float) -> void:
 	var gm = GameManager
-	var in_game := gm.mode == gm.Mode.PLAY or gm.mode == gm.Mode.PAUSED
+	var in_game: bool = gm.mode == gm.Mode.PLAY or gm.mode == gm.Mode.PAUSED
 	_layer.visible = in_game
 	if not in_game:
 		_marker.visible = false
